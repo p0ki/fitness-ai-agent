@@ -1,0 +1,16 @@
+.env
+*.env
+data/
+__pycache__/
+*.pyc
+.pytest_cache/
+.pytest-tmp/
+.test-data/
+pytest-cache-files-*/
+.venv/
+venv/
+backups/
+exports/
+temp/
+*.db
+*.sqlite
