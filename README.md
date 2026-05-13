@@ -1,16 +1,37 @@
 # Fitness AI Agent
 
-Personal Telegram fitness AI agent for a single authorized user.
+A private, Dockerized Telegram fitness assistant built with Python, SQLite, OpenAI, and structured long-term memory.
 
-Phase 1 is a Dockerized Python 3.11 Telegram polling bot. It uses no webhooks, exposed ports, reverse proxy, or public domain. Data lives under `/data` inside the container and `./data` on the host.
+This project is my personal AI-agent build: a single-user Telegram bot that logs meals, workouts, body measurements, food photos, progress photos, summaries, backups, exports, and privacy/admin actions.
+
+It is designed to run as a private polling bot with no exposed ports, no webhook, no public domain, and no reverse proxy.
+
+## Why I Built This
+
+I wanted to start exercising and tracking my progress more seriously, but I could not find an app that felt right for me: free, private, flexible, customizable, and able to adapt to how I actually log food, workouts, photos, and daily check-ins.
+
+So I decided to build one.
+
+The goal is not just to create a fitness tracker, but to practice building a real AI-assisted product: Telegram bot development, AI-agent architecture, Docker-first deployment, SQLite data design, structured memory, privacy-first workflows, photo analysis, testing, and real-world iteration.
 
 ## Portfolio Highlights
 
-- Docker-first Python 3.11 monolith with Telegram polling and no exposed ports.
-- SQLite structured memory for profile, settings, logs, summaries, photo metadata, exports, backups, and soft deletes.
-- Privacy-first allowlist gate that ignores unauthorized users before database writes, photo handling, or OpenAI calls.
-- Centralized OpenAI boundary for text extraction and vision analysis, with graceful no-key fallbacks.
-- Food-photo and progress-photo flows use temporary downloads only; Phase 1 does not permanently store image files.
+- **AI-agent architecture:** Telegram interface, structured memory, OpenAI text/vision analysis, confirmation flows, and privacy/admin tools.
+- **Docker-first deployment:** Python 3.11 monolith with `docker compose up -d`, persistent `/data` volume, and no exposed ports.
+- **Structured local data:** SQLite database for profile, settings, logs, summaries, photo metadata, exports, backups, and soft deletes.
+- **Privacy-first design:** allowlist gate blocks unauthorized users before database writes, photo handling, or OpenAI calls.
+- **Photo analysis workflow:** food and progress photos are temporarily downloaded, analyzed, and deleted; Phase 1 does not permanently store image files.
+- **Testing and maintainability:** milestone-based development, explicit validation, documented commands, and troubleshooting notes.
+
+## Tech Stack
+
+- **Language:** Python 3.11
+- **Bot platform:** Telegram Bot API / polling mode
+- **AI:** OpenAI API, text extraction, vision analysis
+- **Database:** SQLite
+- **Deployment:** Docker, Docker Compose
+- **Storage:** local `/data` volume
+- **Architecture:** single-container monolith, structured memory, privacy-first allowlist
 
 ## Architecture
 
@@ -20,6 +41,53 @@ Phase 1 is a Dockerized Python 3.11 Telegram polling bot. It uses no webhooks, e
 - Runtime secrets are loaded from `.env`, which must stay private.
 - OpenAI calls are centralized behind `app/openai_client.py`.
 
+## Current Capabilities
+
+The app initializes the local SQLite database and stores profile, settings,
+curated memories, raw message audit history, meals, workouts, body
+measurements, deterministic daily/weekly summaries, food-photo metadata,
+pending meal estimates, progress-photo metadata, and pending confirmation
+actions for authorized users.
+
+Privacy/admin tools can export active structured data, create local SQLite
+backups, and soft-delete records after exact confirmation phrases. `/delete_all_data`
+is implemented as a user-scoped soft delete.
+
+Food and progress photos are temporarily downloaded for analysis and then
+deleted. Phase 1 does not permanently store actual image files or temp paths.
+Progress-photo body-fat estimates are rough visual-only metadata, not real
+measurements, and are not written to body measurements.
+
+## Available Commands
+
+- `/start`
+- `/help`
+- `/profile`
+- `/memory`
+- `/data_summary`
+- `/log_weight 80.0`
+- `/log_measurement waist 88 cm`
+- `/log_meal 3 eggs and tuna`
+- `/log_workout 30 min bike`
+- `/summary_today`
+- `/summary_week`
+- `/privacy`
+- `/export`
+- `/backup`
+- `/delete_last`
+- `/delete_today`
+- `/delete_range 2026-05-01 2026-05-07`
+- `/delete_all_data`
+- `/cancel`
+- send a photo with a clear food caption for a meal estimate and confirmation
+- send a photo with a clear progress/body/front/side/back caption for progress analysis
+
+Natural text examples also work for the basics:
+
+- `weighed 80.0`
+- `ate 3 eggs and tuna`
+- `did 30 min bike`
+
 ## Requirements
 
 - Docker Desktop
@@ -27,15 +95,17 @@ Phase 1 is a Dockerized Python 3.11 Telegram polling bot. It uses no webhooks, e
 - Telegram account
 - BotFather bot token
 
-## Windows Development
+## Setup
 
-Create your environment file in PowerShell:
+Create your environment file.
+
+PowerShell:
 
 ```powershell
 copy .env.example .env
 ```
 
-Or in Git Bash:
+Git Bash:
 
 ```bash
 cp .env.example .env
@@ -94,7 +164,16 @@ ALLOWED_TELEGRAM_USER_IDS=<YOUR_TELEGRAM_USER_ID>
 
 If the allowlist is empty, the bot allows development access. Use that only for local testing; do not leave it empty for real deployment.
 
-## Safety
+## Docker Validation
+
+```powershell
+docker compose build
+docker compose up -d
+docker logs -f fitness-ai-agent
+docker compose down
+```
+
+## Safety & Privacy
 
 - `.env` and runtime data are private and should not be committed.
 - Backups and exports are created under `/data/backups/` and `/data/exports/`; keep them private.
@@ -105,15 +184,6 @@ If the allowlist is empty, the bot allows development access. Use that only for 
 
 There is no public hosted demo because this is designed as a private polling bot.
 Real Telegram use and real photo analysis require private credentials in `.env`.
-
-## Docker Validation
-
-```powershell
-docker compose build
-docker compose up -d
-docker logs -f fitness-ai-agent
-docker compose down
-```
 
 ## Troubleshooting
 
@@ -138,53 +208,6 @@ Invalid or missing `TELEGRAM_BOT_TOKEN`:
 - confirm the value is your numeric Telegram user ID
 - during local development, leave it empty briefly to test access
 
-## Available Commands
-
-- `/start`
-- `/help`
-- `/profile`
-- `/memory`
-- `/data_summary`
-- `/log_weight 80.0`
-- `/log_measurement waist 88 cm`
-- `/log_meal 3 eggs and tuna`
-- `/log_workout 30 min bike`
-- `/summary_today`
-- `/summary_week`
-- `/privacy`
-- `/export`
-- `/backup`
-- `/delete_last`
-- `/delete_today`
-- `/delete_range 2026-05-01 2026-05-07`
-- `/delete_all_data`
-- `/cancel`
-- send a photo with a clear food caption for a meal estimate and confirmation
-- send a photo with a clear progress/body/front/side/back caption for progress analysis
-
-Natural text examples also work for the basics:
-
-- `weighed 80.0`
-- `ate 3 eggs and tuna`
-- `did 30 min bike`
-
-## Current Capabilities
-
-The app initializes the local SQLite database and stores profile, settings,
-curated memories, raw message audit history, meals, workouts, body
-measurements, deterministic daily/weekly summaries, food-photo metadata,
-pending meal estimates, progress-photo metadata, and pending confirmation
-actions for authorized users.
-
-Privacy/admin tools can export active structured data, create local SQLite
-backups, and soft-delete records after exact confirmation phrases. `/delete_all_data`
-is implemented as a user-scoped soft delete.
-
-Food and progress photos are temporarily downloaded for analysis and then
-deleted. Phase 1 does not permanently store actual image files or temp paths.
-Progress-photo body-fat estimates are rough visual-only metadata, not real
-measurements, and are not written to body measurements.
-
 ## Not Medical Advice
 
 AI estimates and progress-photo feedback are for personal tracking only. They
@@ -194,4 +217,6 @@ assessment.
 If a photo caption is missing or unclear, the bot asks:
 `Is this food, progress, or ignore?`
 
-Planned work includes equipment, planning, and reminders.
+## Planned Work
+
+Planned work includes equipment tracking, workout planning, reminders, and more advanced coaching flows.
