@@ -1,8 +1,20 @@
 services:
   fitness-ai-agent:
-    build: .
+    build:
+      context: .
+      args:
+        APP_UID: ${PUID:-1000}
+        APP_GID: ${PGID:-1000}
     container_name: fitness-ai-agent
     restart: unless-stopped
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp
     env_file:
       - .env
     volumes:
