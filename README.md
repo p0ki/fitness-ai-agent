@@ -2,6 +2,8 @@
 
 A private, Dockerized Telegram fitness assistant built with Python, SQLite, OpenAI, and structured long-term memory.
 
+> **Portfolio snapshot.** This public repository is a sanitized snapshot of my personal bot. Day-to-day development continues in a private repository; this copy is kept runnable and tested for review.
+
 This project is my personal AI-agent build: a single-user Telegram bot that logs meals, workouts, body measurements, food photos, progress photos, summaries, backups, exports, and privacy/admin actions.
 
 It is designed to run as a private polling bot with no exposed ports, no webhook, no public domain, and no reverse proxy.
@@ -87,6 +89,9 @@ Natural text examples also work for the basics:
 - `weighed 80.0`
 - `ate 3 eggs and tuna`
 - `did 30 min bike`
+
+Workout durations use whole minutes from 1 to 600. Fractional values such as
+`30.5 min` or `30,5 min` are rejected instead of being rounded or truncated.
 
 ## Requirements
 
@@ -220,3 +225,7 @@ If a photo caption is missing or unclear, the bot asks:
 ## Planned Work
 
 Planned work includes equipment tracking, workout planning, reminders, and more advanced coaching flows.
+
+## License
+
+MIT, see [LICENSE](LICENSE).

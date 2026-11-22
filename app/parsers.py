@@ -89,7 +89,12 @@ def parse_workout(text: str) -> ParsedWorkout:
     source = _source_for(text)
     body = _strip_command(text, "/log_workout")
     body = _strip_prefix(body, ("did", "completed", "finished"))
-    match = re.search(r"(?P<duration>-?\d+)\s*(?:min|mins|minute|minutes)\b", body, re.I)
+    # Do not accept the integer suffix of an unsupported decimal duration.
+    match = re.search(
+        r"(?<![\w.,-])(?P<duration>-?\d+)\s*(?:min|mins|minute|minutes)\b",
+        body,
+        re.I,
+    )
     if match is None:
         raise ValueError("Use a workout like: 30 min bike.")
 
